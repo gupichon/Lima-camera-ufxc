@@ -436,7 +436,6 @@ void Camera::getStatus(Camera::Status& status)
 			m_status = Camera::Fault;
 		}
     }
-
 	status = m_status;
 	aLock.unlock();
 	DEB_RETURN() << DEB_VAR1(status);
@@ -623,7 +622,8 @@ void Camera::AcqThread::threadFunction()
         if((!stopped_by_user) && (!acquisition_ok))
         {
             std::ostringstream err_msg;
-            err_msg << "Failed acquisition! Received only " << m_cam.m_acq_frame_nb << " image(s)" << std::endl;
+            err_msg << "Failed acquisition! Received only " << m_cam.m_acq_frame_nb << " image(s). Stopped by user="
+				<< (stopped_by_user?"True":"False") << ", acquisition ok=" << (acquisition_ok?"True":"False") << std::endl;
             DEB_ERROR() << err_msg;
 
             //now detector is in fault
@@ -1711,15 +1711,17 @@ void Camera::SetHardwareRegisters(ufxclib::EnumDetectorType sdk_detector_type)
 	m_acquisition_registers[ufxclib::ACQ_CONF_KEY_ACQ_WAIT_TIME] = "FMC.ACQ_WAIT_TIME";
 	m_acquisition_registers[ufxclib::ACQ_CONF_KEY_ACQ_NIMG] = "FMC.ACQ_NIMG";
 	m_acquisition_registers[ufxclib::ACQ_CONF_KEY_ACQ_NTRIG] = "FMC.ACQ_NTRIG";
-	m_acquisition_registers[ufxclib::ACQ_CONF_KEY_START_ACQ] = "FMC.StartAcq";
-	m_acquisition_registers[ufxclib::ACQ_CONF_KEY_ABORT_ACQ] = "FMC.AbortAcq";
 	m_acquisition_registers[ufxclib::ACQ_CONF_KEY_SFP_SOFT_RESET] = "SFP.SOFT_RESET";
 	if( sdk_detector_type==ufxclib::DETECTOR_U8DEM )
 	{
+		m_acquisition_registers[ufxclib::ACQ_CONF_KEY_START_ACQ] = "FMC.STARTACQ";
+		m_acquisition_registers[ufxclib::ACQ_CONF_KEY_ABORT_ACQ] = "FMC.ABORTACQ";
 		m_acquisition_registers[ufxclib::ACQ_CONF_KEY_FMC_SOFT_RESET] = "UFXSTATUS.SOFT_RESET";
 	}
 	else
 	{
+		m_acquisition_registers[ufxclib::ACQ_CONF_KEY_START_ACQ] = "FMC.StartAcq";
+		m_acquisition_registers[ufxclib::ACQ_CONF_KEY_ABORT_ACQ] = "FMC.AbortAcq";
 		m_acquisition_registers[ufxclib::ACQ_CONF_KEY_FMC_SOFT_RESET] = "FMC.SOFT_RESET";
 	}
 
@@ -1801,14 +1803,16 @@ void Camera::SetHardwareRegisters(ufxclib::EnumDetectorType sdk_detector_type)
 	{
 		m_monitor_registers[ufxclib::EnumMonitoringKey::DETECTOR_STATUS] = "UFXSTATUS.DETECTOR_STATUS";
 		m_monitor_registers[ufxclib::EnumMonitoringKey::EN_PIXCONF_SCANDELAY_SFP] = "FMC.EN_PIXCONF_SFP";
+		m_monitor_registers[ufxclib::EnumMonitoringKey::DELAY_SCAN] = "FMC.Delay_scan";
+		m_monitor_registers[ufxclib::EnumMonitoringKey::ABORT_DELAY] = "FMC.ABORTACQ";
 	}
 	else
 	{
 		m_monitor_registers[ufxclib::EnumMonitoringKey::DETECTOR_STATUS] = "FMC.DETECTOR_STATUS";
 		m_monitor_registers[ufxclib::EnumMonitoringKey::EN_PIXCONF_SCANDELAY_SFP] = "FMC.EN_PIXCONF_SCANDELAY_SFP";
+		m_monitor_registers[ufxclib::EnumMonitoringKey::DELAY_SCAN] = "FMC.Delay_scan";
+		m_monitor_registers[ufxclib::EnumMonitoringKey::ABORT_DELAY] = "FMC.AbortAcq";
 	}
-	m_monitor_registers[ufxclib::EnumMonitoringKey::DELAY_SCAN] = "FMC.Delay_scan";
-	m_monitor_registers[ufxclib::EnumMonitoringKey::ABORT_DELAY] = "FMC.AbortAcq";
 	m_monitor_registers[ufxclib::EnumMonitoringKey::FIRMWARE_VERSION] = "*IDN";
 }
 /*******************************************************
